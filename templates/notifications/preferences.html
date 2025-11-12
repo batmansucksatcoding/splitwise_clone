@@ -1,0 +1,506 @@
+
+<!-- ============================================ -->
+<!-- templates/notifications/preferences.html -->
+<!-- ============================================ -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notification Preferences | Splitwise {% endblock %}
+
+{% block content %}
+<div class="preferences-container fade-in">
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="header-content">
+            <h1>Notification Preferences</h1>
+            <p class="subtitle">Customize how you receive notifications</p>
+        </div>
+        <a href="{% url 'notifications:notification_list' %}" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.66667 13.3333L2 8.66667L6.66667 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 8.66667H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Back to Notifications
+        </a>
+    </section>
+
+    <!-- Preferences Form -->
+    <form method="post" class="preferences-form">
+        {% csrf_token %}
+
+        <!-- In-App Notifications -->
+        <section class="preference-section">
+            <div class="section-header">
+                <h2>In-App Notifications</h2>
+                <p class="section-description">Receive notifications within the application</p>
+            </div>
+
+            <div class="preference-grid">
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="expense_added">Expense Added</label>
+                        <p class="preference-description">When someone adds a new expense</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="expense_added" id="expense_added" {% if preferences.expense_added %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="expense_edited">Expense Edited</label>
+                        <p class="preference-description">When an expense is modified</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="expense_edited" id="expense_edited" {% if preferences.expense_edited %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="expense_deleted">Expense Deleted</label>
+                        <p class="preference-description">When an expense is removed</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="expense_deleted" id="expense_deleted" {% if preferences.expense_deleted %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="payment_received">Payment Received</label>
+                        <p class="preference-description">When someone pays you back</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="payment_received" id="payment_received" {% if preferences.payment_received %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="payment_reminder">Payment Reminders</label>
+                        <p class="preference-description">Reminders about pending payments</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="payment_reminder" id="payment_reminder" {% if preferences.payment_reminder %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="group_invite">Group Invitations</label>
+                        <p class="preference-description">When you're invited to a group</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="group_invite" id="group_invite" {% if preferences.group_invite %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="member_changes">Member Changes</label>
+                        <p class="preference-description">When members join or leave groups</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="member_changes" id="member_changes" {% if preferences.member_changes %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Email Notifications -->
+        <section class="preference-section">
+            <div class="section-header">
+                <h2>Email Notifications</h2>
+                <p class="section-description">Receive email alerts for important events</p>
+            </div>
+
+            <div class="preference-grid">
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="email_expense_added">Expense Added</label>
+                        <p class="preference-description">Email when expenses are added</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="email_expense_added" id="email_expense_added" {% if preferences.email_expense_added %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="email_payment_received">Payment Received</label>
+                        <p class="preference-description">Email when you receive payments</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="email_payment_received" id="email_payment_received" {% if preferences.email_payment_received %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="email_payment_reminder">Payment Reminders</label>
+                        <p class="preference-description">Email reminders about payments</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="email_payment_reminder" id="email_payment_reminder" {% if preferences.email_payment_reminder %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="email_group_invite">Group Invitations</label>
+                        <p class="preference-description">Email for group invites</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="email_group_invite" id="email_group_invite" {% if preferences.email_group_invite %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Email Digest -->
+        <section class="preference-section">
+            <div class="section-header">
+                <h2>Email Digest</h2>
+                <p class="section-description">Receive a summary of notifications</p>
+            </div>
+
+            <div class="preference-grid">
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="email_digest">Enable Email Digest</label>
+                        <p class="preference-description">Get periodic summaries instead of individual emails</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="email_digest" id="email_digest" {% if preferences.email_digest %}checked{% endif %}>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="preference-item">
+                    <div class="preference-info">
+                        <label for="email_digest_frequency">Digest Frequency</label>
+                        <p class="preference-description">How often to receive summaries</p>
+                    </div>
+                    <select name="email_digest_frequency" id="email_digest_frequency" class="preference-select">
+                        <option value="daily" {% if preferences.email_digest_frequency == 'daily' %}selected{% endif %}>Daily</option>
+                        <option value="weekly" {% if preferences.email_digest_frequency == 'weekly' %}selected{% endif %}>Weekly</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- Save Button -->
+        <div class="form-actions">
+            <button type="submit" class="btn-primary btn-save">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Save Preferences
+            </button>
+        </div>
+    </form>
+
+</div>
+
+<style>
+.preferences-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.header-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #f9fafb;
+    color: #374151;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #f3f4f6;
+    transform: translateY(-1px);
+}
+
+/* Preferences Form */
+.preferences-form {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.preference-section {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+}
+
+.section-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.section-description {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.preference-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.preference-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
+    padding: 1rem;
+    background: #f9fafb;
+    border-radius: 12px;
+    transition: background 0.2s ease;
+}
+
+.preference-item:hover {
+    background: #f3f4f6;
+}
+
+.preference-info {
+    flex: 1;
+}
+
+.preference-info label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.25rem;
+    cursor: pointer;
+}
+
+.preference-description {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db;
+    border-radius: 28px;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider:before {
+    content: "";
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(24px);
+}
+
+.toggle-switch:hover .toggle-slider {
+    background-color: #9ca3af;
+}
+
+.toggle-switch input:checked:hover + .toggle-slider {
+    background: linear-gradient(135deg, #16a085, #138d75);
+}
+
+/* Select Dropdown */
+.preference-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #111827;
+    background-color: white;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.preference-select:hover {
+    border-color: #d1d5db;
+}
+
+.preference-select:focus {
+    outline: none;
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.1);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 1rem;
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: white;
+    padding: 12px 32px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border: none;
+    box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #16a085, #138d75);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 188, 156, 0.4);
+}
+
+.btn-save {
+    font-size: 1.05rem;
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .preferences-container {
+        padding: 20px 15px 60px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+    }
+
+    .preference-section {
+        padding: 1.5rem;
+    }
+
+    .preference-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .toggle-switch {
+        align-self: flex-end;
+    }
+
+    .preference-select {
+        width: 100%;
+    }
+
+    .form-actions {
+        justify-content: stretch;
+    }
+
+    .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

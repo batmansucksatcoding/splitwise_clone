@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ group.name }} | Group{% endblock %}
+
+{% block content %}
+<div class="delete-container fade-in">
+  <h1>Delete Group</h1>
+  <p>Are you sure you want to delete <strong>{{ group.name }}</strong>? This action cannot be undone.</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn-danger">Yes, Delete</button>
+    <a href="{% url 'group_detail' group.id %}" class="btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<style>
+.delete-container {
+  max-width: 500px;
+  margin: 80px auto;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+h1 {
+  margin-bottom: 1rem;
+  color: #c0392b;
+}
+
+p { color: #555; }
+
+.btn-danger, .btn-secondary {
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 10px;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+  border: none;
+}
+
+.btn-secondary {
+  background: #f1f3f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-danger:hover { background: #c0392b; }
+.btn-secondary:hover { background: #e9ecef; }
+
+.fade-in { animation: fadeIn .5s ease forwards; opacity: 0; transform: translateY(10px); }
+@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}

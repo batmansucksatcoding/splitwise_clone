@@ -1,0 +1,634 @@
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    background-color: #f9fafb;
+    color: #333;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: #2ecc71;
+}
+
+.navbar .logo {
+    font-size: 1.4rem;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.navbar ul {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+
+.navbar ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.hero {
+    text-align: center;
+    padding: 5rem 2rem;
+    background: linear-gradient(to bottom right, #27ae60, #2ecc71);
+    color: white;
+}
+
+.hero .btn {
+    background-color: white;
+    color: #2ecc71;
+    padding: 0.7rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+footer {
+    text-align: center;
+    padding: 1rem;
+    background-color: #2ecc71;
+    color: white;
+    margin-top: 3rem;
+}
+
+
+/* AUTH */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  background-color: #f8fafb;
+}
+
+.auth-card {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  width: 380px;
+  text-align: center;
+}
+
+.auth-card h2 {
+  color: #27ae60;
+  margin-bottom: 1.5rem;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.7rem;
+  margin-top: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.btn-primary {
+  background-color: #27ae60;
+  color: white;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.btn-primary:hover {
+  background-color: #219150;
+}
+
+.error {
+  color: #e74c3c;
+  font-size: 0.9rem;
+}
+
+.switch-text {
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+/* DASHBOARD */
+.dashboard {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.dashboard h1 {
+  color: #2ecc71;
+  margin-bottom: 1rem;
+}
+
+
+/* ======== Global Styles ======== */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #d2f8d2, #a3e4d7);
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    text-decoration: none;
+    color: #2ecc71;
+    transition: color 0.3s;
+}
+a:hover {
+    color: #1e8449;
+}
+
+/* ======== Navbar ======== */
+.navbar {
+    background: #ffffffc9;
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+}
+
+.logo a {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #2ecc71;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 1.5rem;
+}
+.nav-links li a {
+    color: #333;
+    font-weight: 500;
+}
+.nav-links li a:hover {
+    color: #2ecc71;
+}
+
+/* ======== Auth Pages ======== */
+.auth-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 20px;
+    padding: 2rem 3rem;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    backdrop-filter: blur(8px);
+}
+
+.auth-card h2 {
+    color: #2ecc71;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #555;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #444;
+    font-weight: 500;
+}
+
+input[type="text"], input[type="password"], input[type="email"] {
+    width: 100%;
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: #2ecc71;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #27ae60;
+}
+
+.redirect-text {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* ======== Footer ======== */
+.footer {
+    background: #ffffffcc;
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #555;
+    margin-top: auto;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+}
+
+
+/* ===== General Reset ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #b2f5ea 0%, #d4fc79 100%);
+    color: #222;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ===== Navbar ===== */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2.5rem;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+}
+
+.nav-logo a {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #16a34a;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    color: #222;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #16a34a;
+}
+
+/* ===== Auth Centered Wrapper ===== */
+.auth-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 1rem;
+}
+
+.auth-card {
+    background: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 2.5rem 3rem;
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.auth-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15);
+}
+
+h2 {
+    color: #16a34a;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #444;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+}
+
+/* ===== Form Elements ===== */
+.auth-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: 500;
+    color: #333;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.7rem;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    background: white;
+    box-shadow: 0 0 0 2px #16a34a33;
+}
+
+/* ===== Buttons ===== */
+.btn-primary {
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 12px;
+    background: #16a34a;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #15803d;
+    transform: translateY(-2px);
+}
+
+/* ===== Redirect Links ===== */
+.redirect {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.redirect a {
+    color: #16a34a;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.redirect a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Footer ===== */
+.footer {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255,255,255,0.4);
+    backdrop-filter: blur(10px);
+    font-size: 0.9rem;
+    color: #333;
+}
+
+/* ===== Animation ===== */
+.fade-in {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ===========================
+   DASHBOARD STYLING
+=========================== */
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.header-text h1 {
+  font-size: 2rem;
+  color: #10b981;
+  font-weight: 700;
+}
+
+.header-text .subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  margin-top: 0.3rem;
+}
+
+.add-expense-btn {
+  font-size: 1rem;
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card h3 {
+  color: #374151;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.card-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
+.card-number .negative {
+  color: #dc2626;
+}
+.card-number .positive {
+  color: #16a34a;
+}
+
+/* Group Cards */
+.group-section {
+  margin-top: 3rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+}
+
+.btn-secondary {
+  background: white;
+  border: 1.5px solid #10b981;
+  color: #10b981;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: #10b981;
+  color: white;
+}
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.group-card {
+  background: white;
+  border-radius: 14px;
+  padding: 1.8rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.07);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.group-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.group-card h3 {
+  color: #111827;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.group-type {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.group-meta {
+  color: #4b5563;
+  font-size: 0.9rem;
+  margin-bottom: 1.2rem;
+}
+
+.group-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-view,
+.btn-add {
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-view {
+  background: #f3f4f6;
+  color: #374151;
+}
+.btn-view:hover {
+  background: #e5e7eb;
+}
+
+.btn-add {
+  background: #10b981;
+  color: white;
+}
+.btn-add:hover {
+  background: #059669;
+}
+
+.no-data {
+  color: #6b7280;
+  text-align: center;
+  font-style: italic;
+  margin-top: 2rem;
+}
+
+/* Animation */
+.fade-in {
+  opacity: 0;
+  animation: fadeInUp 0.8s ease forwards;
+}

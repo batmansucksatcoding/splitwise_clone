@@ -1,0 +1,896 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}{{ group.name }} Balances | Splitwise{% endblock %}
+
+{% block content %}
+<div class="group-balances-page" data-group-id="{{ group.id }}">
+  <div class="page-header">
+    <h1>{{ group.name }} - Balances</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="showSimplifyModal()">
+        <span>🔄</span> Simplify Debts
+      </button>
+      <a href="{% url 'balances:settlements_history' group.id %}" class="btn btn-secondary">
+        📜 View History
+      </a>
+    </div>
+  </div>
+
+  <!-- Simplification Info Banner -->
+  {% if simplification_preview.worth_simplifying %}
+  <div class="info-banner">
+    <div class="banner-icon">💡</div>
+    <div class="banner-content">
+      <h3>Debt Simplification Available!</h3>
+      <p>
+        You can reduce <strong>{{ simplification_preview.current_transactions }} transactions</strong> 
+        to just <strong>{{ simplification_preview.simplified_transactions }} transactions</strong>
+        (saving {{ simplification_preview.percentage_saved }}%)
+      </p>
+    </div>
+    <button class="btn-banner" onclick="showSimplifyModal()">Simplify Now</button>
+  </div>
+  {% endif %}
+
+  <!-- Your Balance Summary -->
+  <div class="user-balance-summary">
+    <h2>Your Balance in This Group</h2>
+    <div class="balance-cards">
+      <div class="card owes-card">
+        <span class="label">You Owe</span>
+        <span class="value negative">₹{{ user_balance.total_owes|floatformat:2 }}</span>
+      </div>
+      <div class="card owed-card">
+        <span class="label">You Are Owed</span>
+        <span class="value positive">₹{{ user_balance.total_owed|floatformat:2 }}</span>
+      </div>
+      <div class="card net-card">
+        <span class="label">Net Balance</span>
+        <span class="value {% if user_balance.net_balance >= 0 %}positive{% else %}negative{% endif %}">
+          {% if user_balance.net_balance >= 0 %}+{% endif %}₹{{ user_balance.net_balance|floatformat:2 }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Balance Matrix -->
+  <div class="balance-matrix-section">
+    <h2>Group Balance Matrix</h2>
+    <p class="matrix-description">Shows who owes whom in this group</p>
+    
+    <div class="matrix-container">
+      <table class="balance-matrix">
+        <thead>
+          <tr>
+            <th class="member-header"></th>
+            {% for member in members %}
+              <th class="member-header" title="{{ member.username }}">
+                {{ member.username|truncatechars:10 }}
+              </th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for from_member in members %}
+            <tr>
+              <th class="member-label">{{ from_member.username }}</th>
+              {% for to_member in members %}
+                <td class="matrix-cell">
+                  {% if from_member.id == to_member.id %}
+                    <span class="self-cell">-</span>
+                  {% else %}
+                    {% with amount=matrix|dict_get:from_member.id|dict_get:to_member.id %}
+                      {% if amount > 0 %}
+                        <span class="owes-amount" title="{{ from_member.username }} owes {{ to_member.username }}">
+                          ₹{{ amount|floatformat:2 }}
+                        </span>
+                      {% else %}
+                        <span class="no-balance">-</span>
+                      {% endif %}
+                    {% endwith %}
+                  {% endif %}
+                </td>
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Detailed Balances -->
+  <div class="detailed-balances">
+    <h2>Detailed Balances</h2>
+    {% if simplification_preview.current_transactions > 0 %}
+      <p class="balance-count">
+        {{ simplification_preview.current_transactions }} transaction{{ simplification_preview.current_transactions|pluralize }}
+      </p>
+    {% endif %}
+    
+    <div class="balance-list">
+      {% for from_member in members %}
+        {% for to_member in members %}
+          {% if from_member.id != to_member.id %}
+            {% with amount=matrix|dict_get:from_member.id|dict_get:to_member.id %}
+              {% if amount > 0 %}
+                <div class="balance-item">
+                  <div class="balance-users">
+                    <div class="user-badge from-user">{{ from_member.username }}</div>
+                    <div class="arrow">→</div>
+                    <div class="user-badge to-user">{{ to_member.username }}</div>
+                  </div>
+                  <div class="balance-amount">₹{{ amount|floatformat:2 }}</div>
+                  {% if from_member == request.user %}
+                    <button 
+                      class="btn btn-sm btn-settle"
+                      data-payer-id="{{ from_member.id }}"
+                      data-receiver-id="{{ to_member.id }}"
+                      data-amount="{{ amount }}"
+                      onclick="openSettleModal(this)"
+                    >
+                      Settle Up
+                    </button>
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% endwith %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Simplify Confirmation Modal -->
+<div id="simplify-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>🔄 Simplify Group Debts</h2>
+      <button class="modal-close" onclick="closeSimplifyModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      {% if simplification_preview.worth_simplifying %}
+        <div class="simplify-preview">
+          <div class="preview-stats">
+            <div class="stat-box before">
+              <div class="stat-label">Current</div>
+              <div class="stat-value">{{ simplification_preview.current_transactions }}</div>
+              <div class="stat-sublabel">transactions</div>
+            </div>
+            
+            <div class="arrow-icon">→</div>
+            
+            <div class="stat-box after">
+              <div class="stat-label">After Simplify</div>
+              <div class="stat-value">{{ simplification_preview.simplified_transactions }}</div>
+              <div class="stat-sublabel">transactions</div>
+            </div>
+          </div>
+          
+          <div class="savings-badge">
+            Save {{ simplification_preview.transactions_saved }} transaction{{ simplification_preview.transactions_saved|pluralize }}
+            ({{ simplification_preview.percentage_saved }}%)
+          </div>
+          
+          <div class="simplify-explanation">
+            <p><strong>What does this do?</strong></p>
+            <p>Debt simplification reduces the number of transactions needed to settle all balances. 
+            For example, if A owes B $10, B owes C $10, we can simplify this to: A pays C $10 directly.</p>
+          </div>
+        </div>
+      {% else %}
+        <div class="already-simplified">
+          <div class="check-icon">✅</div>
+          <h3>Already Optimized!</h3>
+          <p>Your group's debts are already in the simplest form possible.</p>
+        </div>
+      {% endif %}
+    </div>
+    
+    <div class="modal-footer">
+      {% if simplification_preview.worth_simplifying %}
+        <button type="button" class="btn btn-primary" onclick="simplifyDebts()">
+          Simplify Debts
+        </button>
+      {% endif %}
+      <button type="button" class="btn btn-secondary" onclick="closeSimplifyModal()">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Settlement Modal -->
+<div id="settle-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>💰 Record Payment</h2>
+      <button class="modal-close" onclick="closeSettleModal()">&times;</button>
+    </div>
+    <form id="settle-form">
+      {% csrf_token %}
+      <input type="hidden" id="settle-payer-id">
+      <input type="hidden" id="settle-receiver-id">
+      
+      <div class="form-group">
+        <label for="settle-amount">Amount (₹)</label>
+        <input type="number" id="settle-amount" step="0.01" required min="0.01">
+      </div>
+      
+      <div class="form-group">
+        <label for="settle-note">Note (optional)</label>
+        <textarea id="settle-note" rows="3" placeholder="e.g., Cash payment, Bank transfer"></textarea>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Record Payment</button>
+        <button type="button" class="btn btn-secondary" onclick="closeSettleModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.group-balances-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Info Banner */
+.info-banner {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  border: 2px solid #ffc107;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.banner-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.banner-content {
+  flex: 1;
+}
+
+.banner-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #856404;
+}
+
+.banner-content p {
+  margin: 0;
+  color: #856404;
+}
+
+.btn-banner {
+  background: #ffc107;
+  color: #856404;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-banner:hover {
+  background: #ffb300;
+  transform: translateY(-2px);
+}
+
+/* Balance Cards */
+.user-balance-summary {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.user-balance-summary h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.3rem;
+  color: #111;
+}
+
+.balance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.balance-cards .card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.balance-cards .card:hover {
+  border-color: #1abc9c;
+  transform: translateY(-2px);
+}
+
+.balance-cards .label {
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 600;
+}
+
+.balance-cards .value {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.value.positive {
+  color: #27ae60;
+}
+
+.value.negative {
+  color: #e74c3c;
+}
+
+/* Balance Matrix */
+.balance-matrix-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.balance-matrix-section h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+}
+
+.matrix-description {
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.matrix-container {
+  overflow-x: auto;
+}
+
+.balance-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px;
+}
+
+.balance-matrix th,
+.balance-matrix td {
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid #e0e0e0;
+}
+
+.balance-matrix th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.member-label {
+  text-align: left !important;
+  background: #f8f9fa;
+}
+
+.matrix-cell {
+  background: white;
+}
+
+.self-cell {
+  color: #ccc;
+  font-weight: 600;
+}
+
+.owes-amount {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.no-balance {
+  color: #ddd;
+}
+
+/* Detailed Balances */
+.detailed-balances {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.detailed-balances h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.3rem;
+}
+
+.balance-count {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.balance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.balance-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.balance-item:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.balance-users {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.user-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.from-user {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.to-user {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.arrow {
+  color: #999;
+  font-size: 1.5rem;
+}
+
+.balance-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e74c3c;
+  margin: 0 1.5rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #16a085 0%, #138d75 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 188, 156, 0.4);
+}
+
+.btn-secondary {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+  background: #e9ecef;
+  border-color: #ced4da;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
+.btn-settle {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+}
+
+.btn-settle:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+}
+
+/* Modals */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  margin-bottom: 1.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 2px solid #f0f0f0;
+}
+
+/* Simplify Preview */
+.simplify-preview {
+  text-align: center;
+}
+
+.preview-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.stat-box {
+  padding: 1.5rem;
+  border-radius: 12px;
+  min-width: 150px;
+}
+
+.stat-box.before {
+  background: #ffebee;
+  border: 2px solid #ef5350;
+}
+
+.stat-box.after {
+  background: #e8f5e9;
+  border: 2px solid #66bb6a;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-sublabel {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.arrow-icon {
+  font-size: 2rem;
+  color: #1abc9c;
+}
+
+.savings-badge {
+  background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+
+.simplify-explanation {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.simplify-explanation p {
+  margin: 0.5rem 0;
+  color: #333;
+  line-height: 1.6;
+}
+
+.already-simplified {
+  text-align: center;
+  padding: 2rem;
+}
+
+.check-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.already-simplified h3 {
+  color: #27ae60;
+  margin-bottom: 0.5rem;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1abc9c;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .info-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .balance-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .balance-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .balance-amount {
+    margin: 0;
+  }
+  
+  .preview-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .arrow-icon {
+    transform: rotate(90deg);
+  }
+}
+</style>
+
+<script>
+const recordSettlementUrl = "{% url 'balances:record_settlement' group.id %}";
+const simplifyDebtsUrl = "{% url 'balances:simplify_debts' group.id %}";
+
+// Settlement Modal
+function openSettleModal(button) {
+  const payerId = button.getAttribute('data-payer-id');
+  const receiverId = button.getAttribute('data-receiver-id');
+  const amount = button.getAttribute('data-amount');
+
+  document.getElementById('settle-payer-id').value = payerId;
+  document.getElementById('settle-receiver-id').value = receiverId;
+  document.getElementById('settle-amount').value = amount;
+  document.getElementById('settle-modal').style.display = 'flex';
+}
+
+function closeSettleModal() {
+  document.getElementById('settle-modal').style.display = 'none';
+  document.getElementById('settle-form').reset();
+}
+
+document.getElementById('settle-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const payerId = document.getElementById('settle-payer-id').value;
+  const receiverId = document.getElementById('settle-receiver-id').value;
+  const amount = parseFloat(document.getElementById('settle-amount').value);
+  
+  if (!amount || amount <= 0) {
+    alert('Amount must be positive');
+    return;
+  }
+  
+  const note = document.getElementById('settle-note').value;
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  try {
+    const response = await fetch(recordSettlementUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({
+        payer_id: payerId,
+        receiver_id: receiverId,
+        amount: amount,
+        note: note
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      alert('✅ ' + data.message);
+      window.location.reload();
+    } else {
+      alert('❌ Error: ' + data.error);
+    }
+  } catch (error) {
+    alert('❌ Failed to record payment');
+    console.error(error);
+  }
+});
+
+// Simplify Modal
+function showSimplifyModal() {
+  document.getElementById('simplify-modal').style.display = 'flex';
+}
+
+function closeSimplifyModal() {
+  document.getElementById('simplify-modal').style.display = 'none';
+}
+
+async function simplifyDebts() {
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  try {
+    const response = await fetch(simplifyDebtsUrl, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken }
+    });
+
+    const data = await response.json();
+    
+    if (data.success) {
+      alert('✅ ' + data.message);
+      window.location.reload();
+    } else {
+      alert('❌ Error: ' + data.error);
+    }
+  } catch (error) {
+    alert('❌ Failed to simplify debts');
+    console.error(error);
+  }
+}
+
+// Close modals on outside click
+window.addEventListener('click', function(e) {
+  const simplifyModal = document.getElementById('simplify-modal');
+  const settleModal = document.getElementById('settle-modal');
+  
+  if (e.target === simplifyModal) {
+    closeSimplifyModal();
+  }
+  if (e.target === settleModal) {
+    closeSettleModal();
+  }
+});
+</script>
+
+{% endblock %}

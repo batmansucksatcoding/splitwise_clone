@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-10 text-white">
+  <div class="max-w-3xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Your Groups</h1>
+
+    <a href="{% url 'create_group' %}" 
+       class="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg transition mb-6 inline-block">
+       + Create New Group
+    </a>
+
+    {% if groups %}
+      <div class="space-y-4">
+        {% for group in groups %}
+          <a href="{% url 'group_detail' group.pk %}" 
+             class="block bg-white/10 hover:bg-white/20 p-6 rounded-2xl transition border border-white/10">
+            <h2 class="text-xl font-semibold">{{ group.name }}</h2>
+            {% if group.description %}
+              <p class="text-gray-400">{{ group.description }}</p>
+            {% endif %}
+            <p class="text-sm text-gray-500 mt-2">
+              Members: {{ group.members.count }} | Created: {{ group.created_at|date:"M d, Y" }}
+            </p>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-gray-400 mt-10 text-center">You’re not part of any groups yet. Create one above!</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

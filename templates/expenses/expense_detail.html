@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Expense Details | Splitwise{% endblock %}
+
+{% block content %}
+<div class="expense-detail-page">
+
+  {# ✅ PDF header - only appears in PDF export #}
+  {% if pdf_mode %}
+  <div class="pdf-header">
+    <h1>💸 Splitwise Expense Summary</h1>
+    {% if expense.group %}
+    <p><strong>Group:</strong> {{ expense.group.name }}</p>
+    {% endif %}
+    <p><strong>Generated on:</strong> {{ now|date:"F j, Y, g:i a" }}</p>
+    <hr>
+  </div>
+  {% endif %}
+
+  <div class="expense-card">
+
+    <div class="card-header">
+      <div class="header-left">
+        <h1>Expense Details</h1>
+      </div>
+      {% if not pdf_mode %}
+      <div class="header-right">
+        <a href="{% url 'expenses:expense_pdf' expense.id %}" class="btn btn-outline-success btn-sm">📄 PDF</a>
+        <button onclick="window.print()" class="btn btn-outline-primary btn-sm">🖨 Print</button>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="card-subinfo">
+      <p class="subtitle">Detailed breakdown of expense: <strong>{{ expense.description }}</strong></p>
+      <p><strong>Amount:</strong> ₹{{ expense.amount }}</p>
+      <p><strong>Date:</strong> {{ expense.date|date:"F j, Y" }}</p>
+      {% if expense.group %}
+      <p><strong>Group:</strong> {{ expense.group.name }}</p>
+      {% endif %}
+      {% if expense.category %}
+      <p><strong>Category:</strong> {{ expense.category.name }}</p>
+      {% endif %}
+      <p><strong>Paid by:</strong> {{ expense.paid_by.username }}</p>
+    </div>
+
+    <div class="shares-section">
+      <h2>Shares Breakdown</h2>
+      <table class="shares-table">
+        <thead>
+          <tr>
+            <th>Participant</th>
+            <th>Amount Owed (₹)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for share in expense.shares.all %}
+          <tr>
+            <td>{{ share.user.username }}</td>
+            <td>{{ share.amount|floatformat:2 }}</td>
+            <td>
+              {% if share.user == request.user %}
+                {% if share.amount > 0 %}
+                  You owe ₹{{ share.amount|floatformat:2 }}
+                {% elif share.amount < 0 %}
+                  You are owed ₹{{ share.amount|floatformat:2|cut:"-" }}
+                {% else %}
+                  Settled
+                {% endif %}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="balances-section">
+      <h2>Your Balance</h2>
+      {% if balances.net_balance > 0 %}
+      <p class="balance positive">You are owed ₹{{ balances.net_balance|floatformat:2 }}</p>
+      {% elif balances.net_balance < 0 %}
+      <p class="balance negative">You owe ₹{{ balances.net_balance|floatformat:2|cut:"-" }}</p>
+      {% else %}
+      <p class="balance neutral">Your balance is settled.</p>
+      {% endif %}
+
+      <h3>Details:</h3>
+      <ul class="balance-details">
+        {% for detail in balances.details %}
+        <li>
+          <strong>{{ detail.user.username }}</strong> — 
+          {% if detail.status == 'owes_me' %}
+          owes you ₹{{ detail.amount|floatformat:2 }}
+          {% else %}
+          you owe ₹{{ detail.amount|floatformat:2 }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if not pdf_mode %}
+    <div class="action-buttons">
+      <a href="{% url 'expenses:expense_list' %}" class="btn btn-secondary">Back to Expenses</a>
+      {% if expense.paid_by == request.user %}
+      <a href="{% url 'expenses:edit_expense' expense.id %}" class="btn btn-primary">Edit Expense</a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+/* ====== CONTAINER ====== */
+.expense-detail-page {
+  max-width: 750px;
+  margin: 40px auto;
+  padding: 15px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* ====== PDF HEADER ====== */
+.pdf-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.pdf-header h1 {
+  color: #4c51bf;
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+/* ====== HEADER BAR (TITLE + BUTTONS) ====== */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.card-header h1 {
+  font-weight: 700;
+  color: #4c51bf;
+  margin: 0;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.btn-outline-success {
+  border: 2px solid #38a169;
+  color: #38a169;
+}
+.btn-outline-success:hover {
+  background-color: #38a169;
+  color: white;
+}
+.btn-outline-primary {
+  border: 2px solid #3182ce;
+  color: #3182ce;
+}
+.btn-outline-primary:hover {
+  background-color: #3182ce;
+  color: white;
+}
+
+/* ====== DETAILS & TABLE ====== */
+.subtitle {
+  font-size: 1rem;
+  color: #718096;
+}
+
+.shares-section h2, .balances-section h2 {
+  color: #4a5568;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 6px;
+}
+
+.shares-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.shares-table th, .shares-table td {
+  text-align: left;
+  padding: 12px 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.shares-table th {
+  background-color: #ebf4ff;
+  color: #2a4365;
+  font-weight: 600;
+}
+
+/* ====== BALANCES ====== */
+.balance {
+  font-size: 1.2rem;
+  padding: 12px;
+  border-radius: 12px;
+  width: fit-content;
+  margin-bottom: 20px;
+}
+.balance.positive {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+.balance.negative {
+  background-color: #fed7d7;
+  color: #742a2a;
+}
+.balance.neutral {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+/* ====== BOTTOM BUTTONS ====== */
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+}
+.action-buttons .btn {
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.btn-primary {
+  background-color: #667eea;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #364fc7;
+}
+.btn-secondary {
+  border: 2px solid #667eea;
+  color: #667eea;
+  background: transparent;
+}
+.btn-secondary:hover {
+  background-color: #667eea;
+  color: white;
+}
+
+/* ====== PRINT MODE ====== */
+@media print {
+  .header-right, .action-buttons, nav, footer {
+    display: none !important;
+  }
+
+  .expense-detail-page {
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    max-width: 100%;
+  }
+}
+</style>
+
+{% endblock %}

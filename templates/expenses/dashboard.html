@@ -1,0 +1,1180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard | Splitwise {% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js for analytics -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container fade-in" >
+
+    <!-- Header -->
+    <section class="dashboard-header">
+        <div class="header-text">
+            <h1>Welcome back, {{ user.first_name|default:user.username }} 👋</h1>
+            <p class="subtitle">Here's your financial overview and recent activity.</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="{% url 'expenses:add_expense' %}" class="btn-primary add-expense-btn">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Add Expense
+            </a>
+            <a href="{% url 'balances:user_balances' %}" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 1V15M11 3H6.5C5.57174 3 4.6815 3.36875 4.02513 4.02513C3.36875 4.6815 3 5.57174 3 6.5C3 7.42826 3.36875 8.3185 4.02513 8.97487C4.6815 9.63125 5.57174 10 6.5 10H9.5C10.4283 10 11.3185 10.3687 11.9749 11.0251C12.6313 11.6815 13 12.5717 13 13.5C13 14.4283 12.6313 15.3185 11.9749 15.9749C11.3185 16.6313 10.4283 17 9.5 17H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                View Balances
+            </a>
+        </div>
+    </section>
+
+    <!-- Summary Cards -->
+    <section class="summary-cards">
+        <div class="summary-card">
+            <div class="card-icon groups-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89317 18.7122 8.75608 18.1676 9.45768C17.623 10.1593 16.8604 10.6597 16 10.88M13 7C13 9.20914 11.2091 11 9 11C6.79086 11 5 9.20914 5 7C5 4.79086 6.79086 3 9 3C11.2091 3 13 4.79086 13 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="card-content">
+                <h3>Total Groups</h3>
+                <p class="card-number">{{ total_groups|default:"0" }}</p>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="card-icon expenses-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="card-content">
+                <h3>Total Expenses</h3>
+                <p class="card-number">{{ total_expenses|default:"0" }}</p>
+                <p class="card-subtitle">{{ expenses_this_month|default:"0" }} this month</p>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="card-icon balance-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2V22M17 5H9.5C8.57174 5 7.6815 5.36875 7.02513 6.02513C6.36875 6.6815 6 7.57174 6 8.5C6 9.42826 6.36875 10.3185 7.02513 10.9749C7.6815 11.6313 8.57174 12 9.5 12H14.5C15.4283 12 16.3185 12.3687 16.9749 13.0251C17.6313 13.6815 18 14.5717 18 15.5C18 16.4283 17.6313 17.3185 16.9749 17.9749C16.3185 18.6313 15.4283 19 14.5 19H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="card-content">
+                <h3>Net Balance</h3>
+                <p class="card-number">
+                  {% if overall_balance < 0 %}
+                      <span class="negative">-₹{{ overall_balance_abs|floatformat:2 }}</span>
+                  {% elif overall_balance > 0 %}
+                      <span class="positive">+₹{{ overall_balance|floatformat:2 }}</span>
+                  {% else %}
+                      <span class="neutral">₹0.00</span>
+                  {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="card-icon stats-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22 12H18L15 21L9 3L6 12H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="card-content">
+                <h3>Average Expense</h3>
+                <p class="card-number">₹{{ avg_expense|floatformat:2|default:"0.00" }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analytics Charts -->
+    {% if monthly_data.labels %}
+    <section class="analytics-section">
+        <div class="section-header">
+            <h2>📊 Spending Analytics</h2>
+        </div>
+
+        <div class="charts-grid">
+            <!-- Monthly Trend Chart -->
+            <div class="chart-card">
+                <h3>Monthly Spending Trend</h3>
+                <canvas id="monthlyTrendChart"></canvas>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="chart-card">
+                <h3>Spending by Group</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Additional Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-content">
+                    <h4>Your Contribution</h4>
+                    <p class="stat-value">{{ contribution_percentage|default:"0" }}%</p>
+                    <p class="stat-subtitle">₹{{ total_paid_by_user|floatformat:2|default:"0.00" }} paid</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-content">
+                    <h4>Settlements</h4>
+                    <p class="stat-value">{{ settlements_this_month|default:"0" }}</p>
+                    <p class="stat-subtitle">This month</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-content">
+                    <h4>Active Groups</h4>
+                    <p class="stat-value">{{ total_groups|default:"0" }}</p>
+                    <p class="stat-subtitle">{{ total_expenses|default:"0" }} total expenses</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Balance Overview Widget -->
+    <section class="balance-overview">
+        <div class="section-header">
+            <h2>💸 Balance Overview</h2>
+            <a href="{% url 'balances:user_balances' %}" class="link-view-all">
+                View All Balances →
+            </a>
+        </div>
+
+        <div class="balance-summary-grid">
+            <!-- You Owe -->
+            <div class="balance-summary-card owes-card">
+                <div class="balance-card-header">
+                    <h3>You Owe</h3>
+                    <span class="balance-total negative">₹{{ total_owes|floatformat:2|default:"0.00" }}</span>
+                </div>
+                {% if recent_owes %}
+                    <div class="balance-list">
+                        {% for item in recent_owes %}
+                            <div class="balance-item">
+                                <div class="balance-info">
+                                    <span class="person-name">{{ item.user.username }}</span>
+                                    <span class="group-label">{{ item.group.name }}</span>
+                                </div>
+                                <span class="amount negative">₹{{ item.amount|floatformat:2 }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <a href="{% url 'balances:user_balances' %}" class="btn-settle-all">
+                        Settle Up
+                    </a>
+                {% else %}
+                    <p class="empty-balance">All settled up! 🎉</p>
+                {% endif %}
+            </div>
+
+            <!-- You Are Owed -->
+            <div class="balance-summary-card owed-card">
+                <div class="balance-card-header">
+                    <h3>You Are Owed</h3>
+                    <span class="balance-total positive">₹{{ total_owed|floatformat:2|default:"0.00" }}</span>
+                </div>
+                {% if recent_owed %}
+                    <div class="balance-list">
+                        {% for item in recent_owed %}
+                            <div class="balance-item">
+                                <div class="balance-info">
+                                    <span class="person-name">{{ item.user.username }}</span>
+                                    <span class="group-label">{{ item.group.name }}</span>
+                                </div>
+                                <span class="amount positive">₹{{ item.amount|floatformat:2 }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-balance">No one owes you money</p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Two Column Layout: Recent Expenses & Group Stats -->
+    <div class="two-column-layout">
+        <!-- Recent Expenses -->
+        <section class="recent-expenses-section">
+            <div class="section-header">
+                <h2>🧾 Recent Expenses</h2>
+                <a href="{% url 'expenses:add_expense' %}" class="link-view-all">
+                    Add Expense →
+                </a>
+            </div>
+
+            {% if recent_expenses %}
+                <div class="expenses-list">
+                    {% for expense in recent_expenses %}
+                        <a href="{% url 'expenses:expense_detail' expense.id %}" class="expense-item">
+                            <div class="expense-icon">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M16 4H4C2.89543 4 2 4.89543 2 6V14C2 15.1046 2.89543 16 4 16H16C17.1046 16 18 15.1046 18 14V6C18 4.89543 17.1046 4 16 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M2 8H18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            <div class="expense-details">
+                                <div class="expense-title">{{ expense.description }}</div>
+                                <div class="expense-meta">
+                                    <span class="expense-group">{{ expense.group.name }}</span>
+                                    <span class="expense-divider">•</span>
+                                    <span class="expense-date">{{ expense.date|date:"M d" }}</span>
+                                    <span class="expense-divider">•</span>
+                                    <span class="expense-payer">{{ expense.paid_by.username }}</span>
+                                </div>
+                            </div>
+                            <div class="expense-amount">₹{{ expense.amount|floatformat:2 }}</div>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state-mini">
+                    <p class="no-data">No expenses yet</p>
+                    <a href="{% url 'expenses:add_expense' %}" class="btn-primary-sm">Add Your First Expense</a>
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Group Activity Stats -->
+        <section class="group-stats-section">
+            <div class="section-header">
+                <h2>📈 Group Activity</h2>
+            </div>
+
+            {% if group_stats %}
+                <div class="group-stats-list">
+                    {% for stat in group_stats %}
+                        <div class="group-stat-item">
+                            <div class="group-stat-header">
+                                <h4>{{ stat.group.name }}</h4>
+                                <span class="stat-badge">{{ stat.expense_count }} expenses</span>
+                            </div>
+                            <div class="group-stat-details">
+                                <div class="stat-detail">
+                                    <span class="label">Total Spent</span>
+                                    <span class="value">₹{{ stat.total_spent|floatformat:2 }}</span>
+                                </div>
+                                <div class="stat-detail">
+                                    <span class="label">Average</span>
+                                    <span class="value">₹{{ stat.average|floatformat:2 }}</span>
+                                </div>
+                            </div>
+                            <a href="{% url 'balances:group_balances' stat.group.id %}" class="view-group-link">
+                                View Balances →
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state-mini">
+                    <p class="no-data">No group activity yet</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+
+    <!-- Groups Grid -->
+    <section class="group-section">
+        <div class="section-header">
+            <h2>👥 Your Groups</h2>
+            <a href="{% url 'create_group' %}" class="btn-secondary">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Create Group
+            </a>
+        </div>
+
+        {% if groups %}
+        <div class="group-grid">
+            {% for group in groups %}
+            <div class="group-card">
+                <div class="group-header">
+                    <h3>{{ group.name }}</h3>
+                    <span class="group-type">{{ group.get_type_display }}</span>
+                </div>
+                <p class="group-meta">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M11 14V12.6667C11 11.9594 10.719 11.2811 10.219 10.781C9.71895 10.281 9.04058 10 8.33333 10H3.66667C2.95942 10 2.28105 10.281 1.78105 10.781C1.28095 11.2811 1 11.9594 1 12.6667V14M14 14V12.6667C13.9997 12.0758 13.8044 11.5019 13.4457 11.0349C13.087 10.5679 12.5851 10.2344 12.0133 10.0867M10.3467 2.08667C10.9202 2.23354 11.4236 2.56714 11.7833 3.03488C12.143 3.50262 12.3388 4.07789 12.3388 4.67C12.3388 5.26211 12.143 5.83738 11.7833 6.30512C11.4236 6.77286 10.9202 7.10646 10.3467 7.25333M8.66667 4.66667C8.66667 6.13943 7.47276 7.33333 6 7.33333C4.52724 7.33333 3.33333 6.13943 3.33333 4.66667C3.33333 3.19391 4.52724 2 6 2C7.47276 2 8.66667 3.19391 8.66667 4.66667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    {{ group.members.count }} member{{ group.members.count|pluralize }}
+                </p>
+                <div class="group-actions">
+                    <a href="{% url 'group_detail' group.id %}" class="btn-view">View Details</a>
+                    <a href="{% url 'balances:group_balances' group.id %}" class="btn-balances">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 1V13M10 3H5.5C4.83696 3 4.20107 3.26339 3.73223 3.73223C3.26339 4.20107 3 4.83696 3 5.5C3 6.16304 3.26339 6.79893 3.73223 7.26777C4.20107 7.73661 4.83696 8 5.5 8H8.5C9.16304 8 9.79893 8.26339 10.2678 8.73223C10.7366 9.20107 11 9.83696 11 10.5C11 11.163 10.7366 11.7989 10.2678 12.2678C9.79893 12.7366 9.16304 13 8.5 13H3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Balances
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M32 56C45.2548 56 56 45.2548 56 32C56 18.7452 45.2548 8 32 8C18.7452 8 8 18.7452 8 32C8 45.2548 18.7452 56 32 56Z" stroke="#D1D5DB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M32 20V32L40 36" stroke="#D1D5DB" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <p class="no-data">No groups yet. Create your first one!</p>
+            <a href="{% url 'create_group' %}" class="btn-primary" style="margin-top: 1rem;">Create Your First Group</a>
+        </div>
+        {% endif %}
+    </section>
+
+</div>
+
+{{ monthly_data.labels|json_script:"monthly-labels" }}
+{{ monthly_data.amounts|json_script:"monthly-amounts" }}
+{{ category_data.labels|json_script:"category-labels" }}
+{{ category_data.amounts|json_script:"category-amounts" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    try {
+        const monthlyLabels = JSON.parse(document.getElementById('monthly-labels').textContent);
+        const monthlyAmounts = JSON.parse(document.getElementById('monthly-amounts').textContent);
+        const categoryLabels = JSON.parse(document.getElementById('category-labels').textContent);
+        const categoryAmounts = JSON.parse(document.getElementById('category-amounts').textContent);
+
+        console.log("Chart data loaded:", monthlyLabels, monthlyAmounts, categoryLabels, categoryAmounts);
+
+        const ctx1 = document.getElementById("monthlyTrendChart");
+        if (ctx1 && monthlyLabels.length > 0) {
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: monthlyLabels,
+                    datasets: [{
+                        label: 'Spending',
+                        data: monthlyAmounts,
+                        borderColor: '#1abc9c',
+                        backgroundColor: 'rgba(26,188,156,0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+
+        const ctx2 = document.getElementById("categoryChart");
+        if (ctx2 && categoryLabels.length > 0) {
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryAmounts,
+                        backgroundColor: [
+                            '#1abc9c','#3498db','#9b59b6','#e74c3c','#f39c12'
+                        ]
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+    } catch (err) {
+        console.error("Error parsing chart data:", err);
+    }
+});
+</script>
+
+<style>
+/* Copy all the CSS from the previous dashboard template here */
+/* I'll include the essential styles - you already have most of these */
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+  color: #222;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 40px;
+}
+
+.header-text h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #111;
+  font-weight: 700;
+}
+
+.subtitle {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #16a085 0%, #138d75 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(26, 188, 156, 0.4);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #f9fafb;
+  color: #374151;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-primary-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.card-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.groups-icon {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  color: #1976d2;
+}
+
+.expenses-icon {
+  background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+  color: #7b1fa2;
+}
+
+.balance-icon {
+  background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+  color: #388e3c;
+}
+
+.stats-icon {
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  color: #f57c00;
+}
+
+.card-content h3 {
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.card-subtitle {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  margin-top: 0.25rem;
+}
+
+.positive {
+  color: #16a085;
+}
+
+.negative {
+  color: #e74c3c;
+}
+
+.neutral {
+  color: #6b7280;
+}
+
+/* Analytics Section */
+.analytics-section {
+  margin-bottom: 3rem;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f3f4f6;
+}
+
+.chart-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card canvas {
+  max-height: 300px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f3f4f6;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.stat-content h4 {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-subtitle {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* Section Headers */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.link-view-all {
+  color: #1abc9c;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.link-view-all:hover {
+  color: #16a085;
+}
+
+/* Balance Overview */
+.balance-overview {
+  margin-bottom: 3rem;
+}
+
+.balance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.balance-summary-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+.balance-summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.balance-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.balance-card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.balance-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.balance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.balance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.balance-item:hover {
+  background: #f3f4f6;
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.person-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.95rem;
+}
+
+.group-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.balance-item .amount {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.empty-balance {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #9ca3af;
+  font-size: 0.95rem;
+}
+
+.btn-settle-all {
+  display: block;
+  text-align: center;
+  background: linear-gradient(135deg, #1abc9c, #16a085);
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-settle-all:hover {
+  background: linear-gradient(135deg, #16a085, #138d75);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+}
+
+/* Two Column Layout */
+.two-column-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+/* Recent Expenses */
+.recent-expenses-section {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f3f4f6;
+}
+
+.expenses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.expense-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid #e5e7eb;
+}
+
+.expense-item:hover {
+  background: #f3f4f6;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.expense-icon {
+  margin-right: 1rem;
+  color: #6b7280;
+}
+
+.expense-details {
+  flex: 1;
+}
+
+.expense-title {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+.expense-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.expense-divider {
+  color: #d1d5db;
+}
+
+.expense-amount {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-left: 1rem;
+}
+
+/* Group Stats */
+.group-stats-section {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f3f4f6;
+}
+
+.group-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.group-stat-item {
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.group-stat-item:hover {
+  background: #f3f4f6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.group-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.group-stat-header h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.stat-badge {
+  background: #e8f5e9;
+  color: #388e3c;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.group-stat-details {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.stat-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stat-detail .label {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.stat-detail .value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.view-group-link {
+  color: #1abc9c;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.view-group-link:hover {
+  color: #16a085;
+}
+
+/* Empty States */
+.empty-state-mini {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #e5e7eb;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #f9fafb;
+  border-radius: 16px;
+  border: 2px dashed #e5e7eb;
+}
+
+.empty-state svg {
+  opacity: 0.5;
+  margin-bottom: 1.5rem;
+}
+
+.no-data {
+  color: #6b7280;
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0.5rem 0;
+}
+
+/* Groups Section */
+.group-section {
+  margin-bottom: 2rem;
+}
+
+.group-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.group-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #f3f4f6;
+  transition: all 0.3s ease;
+}
+
+.group-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.group-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  flex: 1;
+}
+
+.group-type {
+  background: #e3fcec;
+  color: #019267;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.group-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.group-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-view, .btn-balances {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: #f9fafb;
+  color: #374151;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #e5e7eb;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-view:hover, .btn-balances:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Animation */
+.fade-in {
+  animation: fadeInAnim 0.6s ease-out;
+}
+
+@keyframes fadeInAnim {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .two-column-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 24px 16px 60px;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-text h1 {
+    font-size: 1.6rem;
+  }
+  
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .balance-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .group-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .group-actions {
+    flex-direction: column;
+  }
+  
+  .btn-view, .btn-balances {
+    width: 100%;
+  }
+  
+  .expense-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .expense-amount {
+    margin-left: 0;
+  }
+}
+</style>
+{% endblock %}

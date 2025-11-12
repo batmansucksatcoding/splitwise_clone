@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ group.name }} | Group{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in">
+  <h1>Edit Group</h1>
+
+  <form method="POST">
+    {% csrf_token %}
+    <label>Group Name</label>
+    <input type="text" name="group_name" value="{{ group.name }}" required>
+
+    <label>Group Type</label>
+    <select name="group_type">
+      {% for value, label in group.GROUP_TYPES %}
+        <option value="{{ value }}" {% if value == group.type %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+
+    <label>Description</label>
+    <textarea name="description">{{ group.description }}</textarea>
+
+    <label>Start Date</label>
+    <input type="date" name="start_date" value="{{ group.start_date|date:'Y-m-d' }}">
+
+    <label>End Date</label>
+    <input type="date" name="end_date" value="{{ group.end_date|date:'Y-m-d' }}">
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Save Changes</button>
+      <a href="{% url 'group_detail' group.id %}" class="btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+.form-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+  color: #222;
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+  color: #333;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+
+textarea { height: 100px; resize: vertical; }
+
+.form-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  text-align: center;
+}
+
+.btn-primary { background: #1abc9c; color: white; border: none; }
+.btn-secondary { background: #f1f3f5; color: #333; border: 1px solid #ccc; }
+
+.btn-primary:hover { background: #16a085; }
+.btn-secondary:hover { background: #e9ecef; }
+
+.fade-in { animation: fadeIn .5s ease forwards; opacity: 0; transform: translateY(10px); }
+@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}

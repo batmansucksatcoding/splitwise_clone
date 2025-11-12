@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Find Friends | Splitwise{% endblock %}
+
+{% block content %}
+<div class="dashboard-container fade-in">
+
+    <!-- Header -->
+    <section class="dashboard-header">
+        <div class="header-text">
+            <h1>🔍 Find Friends</h1>
+            <p class="subtitle">Search for people and send them a friend request</p>
+        </div>
+        <div class="header-actions">
+            <a href="{% url 'friends_list' %}" class="btn-secondary">
+                ← Back to My Friends
+            </a>
+        </div>
+    </section>
+
+    <!-- Search Bar -->
+    <section class="search-section">
+        <form method="get" action="{% url 'accounts:search_friends' %}" class="search-form-container">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input 
+                    type="text" 
+                    name="q" 
+                    class="search-input"
+                    placeholder="Search by username or email..." 
+                    value="{{ query }}"
+                    autofocus>
+                {% if query %}
+                <button type="button" class="clear-search" onclick="this.previousElementSibling.value=''; this.closest('form').submit();">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+                {% endif %}
+            </div>
+            <button type="submit" class="btn-search">
+                Search
+            </button>
+        </form>
+
+        {% if query %}
+            <div class="search-results-header">
+                <p class="results-text">
+                    Results for: <strong class="search-term">{{ query }}</strong>
+                </p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Results -->
+    <section class="results-section">
+        {% if results %}
+            <div class="results-count">
+                <span class="count-badge">{{ results|length }}</span>
+                <span class="count-text">user{{ results|length|pluralize }} found</span>
+            </div>
+            
+            <div class="results-grid">
+                {% for user in results %}
+                <div class="result-card">
+                    <div class="result-avatar">
+                        <div class="avatar-circle">{{ user.username|first|upper }}</div>
+                    </div>
+                    <div class="result-info">
+                        <h3 class="result-name">{{ user.username }}</h3>
+                        <p class="result-email">{{ user.email|default:"No email provided" }}</p>
+                    </div>
+                    <div class="result-action">
+                        <a href="{% url 'add_friend' user.id %}" class="btn-add-friend">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            <span>Add Friend</span>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% if query %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                            <circle cx="32" cy="32" r="16" stroke="#D1D5DB" stroke-width="2.5"/>
+                            <path d="M16 64C16 54.0589 24.0589 46 34 46H44C53.9411 46 62 54.0589 62 64" stroke="#D1D5DB" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M56 24L68 36M68 24L56 36" stroke="#D1D5DB" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state-title">No users found</h3>
+                    <p class="empty-state-text">We couldn't find anyone matching "<strong>{{ query }}</strong>"</p>
+                    <p class="empty-state-hint">Try searching with a different username or email</p>
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                            <circle cx="32" cy="32" r="16" stroke="#D1D5DB" stroke-width="2.5"/>
+                            <path d="M16 64C16 54.0589 24.0589 46 34 46H44C53.9411 46 62 54.0589 62 64" stroke="#D1D5DB" stroke-width="2.5" stroke-linecap="round"/>
+                            <circle cx="58" cy="28" r="12" stroke="#5cc5b0" stroke-width="2.5"/>
+                            <path d="M58 22V34M52 28H64" stroke="#5cc5b0" stroke-width="2.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state-title">Start searching for friends</h3>
+                    <p class="empty-state-text">Enter a username or email to find people you want to connect with</p>
+                </div>
+            {% endif %}
+        {% endif %}
+    </section>
+
+</div>
+
+<style>
+/* Search Section */
+.search-section {
+    margin-bottom: 2rem;
+}
+
+.search-form-container {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.search-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #5cc5b0;
+    box-shadow: 0 0 0 3px rgba(92, 197, 176, 0.1);
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.clear-search {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.2s ease;
+}
+
+.clear-search:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.btn-search {
+    padding: 0.875rem 2rem;
+    background: #5cc5b0;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-search:hover {
+    background: #4db3a0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(92, 197, 176, 0.3);
+}
+
+.search-results-header {
+    padding: 1rem 0;
+}
+
+.results-text {
+    color: #6b7280;
+    margin: 0;
+}
+
+.search-term {
+    color: #1f2937;
+}
+
+/* Results Section */
+.results-section {
+    min-height: 300px;
+}
+
+.results-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 10px;
+    background: #5cc5b0;
+    color: white;
+    border-radius: 14px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.count-text {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.result-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.result-card:hover {
+    border-color: #5cc5b0;
+    box-shadow: 0 4px 16px rgba(92, 197, 176, 0.1);
+    transform: translateY(-2px);
+}
+
+.result-avatar {
+    flex-shrink: 0;
+}
+
+.avatar-circle {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, #5cc5b0, #4db3a0);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.result-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.result-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+}
+
+.result-email {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.result-action {
+    flex-shrink: 0;
+}
+
+.btn-add-friend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #5cc5b0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-add-friend:hover {
+    background: #4db3a0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(92, 197, 176, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 1.5rem;
+}
+
+.empty-state-icon {
+    margin-bottom: 1.5rem;
+}
+
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state-text {
+    color: #6b7280;
+    font-size: 1rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.empty-state-hint {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    margin: 0;
+}
+
+.btn-icon {
+    display: inline-block;
+    margin-right: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .search-form-container {
+        flex-direction: column;
+    }
+    
+    .btn-search {
+        width: 100%;
+    }
+    
+    .results-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .result-card {
+        flex-wrap: wrap;
+    }
+    
+    .result-action {
+        width: 100%;
+    }
+    
+    .btn-add-friend {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}

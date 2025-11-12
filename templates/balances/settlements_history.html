@@ -1,0 +1,124 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Settlement History | {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="settlements-page">
+  <div class="page-header">
+    <h1>{{ group.name }} - Settlement History</h1>
+    <a href="{% url 'balances:group_balances' group.id %}" class="btn btn-secondary">
+      Back to Balances
+    </a>
+  </div>
+
+  <div class="settlements-list">
+    {% if settlements %}
+      {% for settlement in settlements %}
+        <div class="settlement-item">
+          <div class="settlement-icon">💰</div>
+          <div class="settlement-info">
+            <div class="settlement-description">
+              <strong>{{ settlement.payer.username }}</strong>
+              paid
+              <strong>{{ settlement.receiver.username }}</strong>
+            </div>
+            <div class="settlement-meta">
+              {{ settlement.settled_at|date:"F d, Y g:i A" }}
+              {% if settlement.created_by %}
+                • Added by {{ settlement.created_by.username }}
+              {% endif %}
+            </div>
+            {% if settlement.note %}
+              <div class="settlement-note">{{ settlement.note }}</div>
+            {% endif %}
+          </div>
+          <div class="settlement-amount">₹{{ settlement.amount|floatformat:2 }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <p>No settlement history yet</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+.settlements-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.settlements-list {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.settlement-item {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  transition: background 0.2s;
+}
+
+.settlement-item:last-child {
+  border-bottom: none;
+}
+
+.settlement-item:hover {
+  background: #f8f9fa;
+}
+
+.settlement-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+}
+
+.settlement-info {
+  flex: 1;
+}
+
+.settlement-description {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.settlement-meta {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.settlement-note {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-style: italic;
+}
+
+.settlement-amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #27ae60;
+}
+
+.empty-state {
+  padding: 4rem;
+  text-align: center;
+  color: #999;
+}
+</style>
+{% endblock %}
+'''

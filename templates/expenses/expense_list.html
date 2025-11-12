@@ -1,0 +1,584 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Expenses | Splitwise {% endblock %}
+
+{% block content %}
+<div class="expenses-container fade-in">
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="header-content">
+            <h1>All Expenses</h1>
+            <p class="subtitle">Track and manage all your shared expenses</p>
+        </div>
+        <a href="{% url 'expenses:add_expense' %}" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Expense
+        </a>
+    </section>
+
+    <!-- Filters -->
+    <section class="filters-section">
+        <div class="filters-container">
+            {% if groups %}
+            <div class="filter-group">
+                <label for="groupFilter">Filter by Group</label>
+                <select id="groupFilter" class="filter-select">
+                    <option value="">All Groups</option>
+                    {% for group in groups %}
+                    <option value="{{ group.id }}" {% if selected_group == group.id|stringformat:"s" %}selected{% endif %}>
+                        {{ group.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            {% if categories %}
+            <div class="filter-group">
+                <label for="categoryFilter">Filter by Category</label>
+                <select id="categoryFilter" class="filter-select">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                    <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>
+                        {{ category.icon }} {{ category.get_name_display }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    {% if expenses %}
+    <!-- Expenses List -->
+    <section class="expenses-list">
+        {% for expense in expenses %}
+        <div class="expense-card">
+            <div class="expense-card-header">
+                <div class="expense-main-info">
+                    {% if expense.category %}
+                    <span class="category-badge" style="background-color: {{ expense.category.color }}15; border-color: {{ expense.category.color }}50;">
+                        <span class="category-icon">{{ expense.category.icon }}</span>
+                        <span class="category-name">{{ expense.category.get_name_display }}</span>
+                    </span>
+                    {% endif %}
+                    <h3 class="expense-title">{{ expense.description }}</h3>
+                </div>
+                <div class="expense-amount">
+                    <span class="amount-value">₹{{ expense.amount|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            <div class="expense-card-body">
+                <div class="expense-meta">
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8C2 11.3137 4.68629 14 8 14Z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M8 4V8L10.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <span>{{ expense.date|date:"M d, Y" }}</span>
+                    </div>
+
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 8C9.65685 8 11 6.65685 11 5C11 3.34315 9.65685 2 8 2C6.34315 2 5 3.34315 5 5C5 6.65685 6.34315 8 8 8Z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M2 13C2 10.7909 3.79086 9 6 9H10C12.2091 9 14 10.7909 14 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <span>Paid by <strong>{{ expense.paid_by.username }}</strong></span>
+                    </div>
+
+                    {% if expense.group %}
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11 14V12.6667C11 11.9594 10.719 11.2811 10.219 10.781C9.71895 10.281 9.04058 10 8.33333 10H3.66667C2.95942 10 2.28105 10.281 1.78105 10.781C1.28095 11.2811 1 11.9594 1 12.6667V14" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M6 7.33333C7.47276 7.33333 8.66667 6.13943 8.66667 4.66667C8.66667 3.19391 7.47276 2 6 2C4.52724 2 3.33333 3.19391 3.33333 4.66667C3.33333 6.13943 4.52724 7.33333 6 7.33333Z" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M14 14V12.6667C13.9997 12.0758 13.8044 11.5019 13.4457 11.0349C13.087 10.5679 12.5851 10.2344 12.0133 10.0867" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M10.3467 2.08667C10.9202 2.23354 11.4236 2.56714 11.7833 3.03488C12.143 3.50262 12.3388 4.07789 12.3388 4.67C12.3388 5.26211 12.143 5.83738 11.7833 6.30512C11.4236 6.77286 10.9202 7.10646 10.3467 7.25333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        </svg>
+                        <span>{{ expense.group.name }}</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="meta-item split-badge">
+                        {% if expense.split_type == 'equal' %}
+                        <span class="badge badge-blue">Equal Split</span>
+                        {% elif expense.split_type == 'unequal' %}
+                        <span class="badge badge-orange">Unequal</span>
+                        {% else %}
+                        <span class="badge badge-purple">Percentage</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="expense-card-footer">
+                <a href="{% url 'expenses:expense_detail' expense.id %}" class="btn-view-details">
+                    View Details
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.25 10.5L8.75 7L5.25 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                {% if expense.paid_by == user %}
+                <div class="action-buttons">
+                    <a href="{% url 'expenses:edit_expense' expense.id %}" class="btn-action btn-edit" title="Edit">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6.41667 2.33333H2.33333C1.97971 2.33333 1.64057 2.47381 1.39052 2.72386C1.14048 2.97391 1 3.31304 1 3.66667V11.6667C1 12.0203 1.14048 12.3594 1.39052 12.6095C1.64057 12.8595 1.97971 13 2.33333 13H10.3333C10.687 13 11.0261 12.8595 11.2761 12.6095C11.5262 12.3594 11.6667 12.0203 11.6667 11.6667V7.58333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M10.7917 1.45833C11.0569 1.19312 11.4185 1.04395 11.7958 1.04395C12.1732 1.04395 12.5348 1.19312 12.8 1.45833C13.0652 1.72355 13.2144 2.08517 13.2144 2.46251C13.2144 2.83984 13.0652 3.20146 12.8 3.46668L7 9.26668L4.66667 9.91668L5.31667 7.58334L10.7917 1.45833Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                    <a href="{% url 'expenses:delete_expense' expense.id %}" class="btn-action btn-delete" title="Delete">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1.75 3.5H2.91667H12.25" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M4.66667 3.5V2.33333C4.66667 2.02391 4.78958 1.72717 5.00838 1.50838C5.22717 1.28958 5.52391 1.16667 5.83333 1.16667H8.16667C8.47609 1.16667 8.77283 1.28958 8.99162 1.50838C9.21042 1.72717 9.33333 2.02391 9.33333 2.33333V3.5M11.0833 3.5V11.6667C11.0833 11.9761 10.9604 12.2728 10.7416 12.4916C10.5228 12.7104 10.2261 12.8333 9.91667 12.8333H4.08333C3.77391 12.8333 3.47717 12.7104 3.25838 12.4916C3.03958 12.2728 2.91667 11.9761 2.91667 11.6667V3.5H11.0833Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+
+    {% else %}
+    <!-- Empty State -->
+    <section class="empty-state">
+        <div class="empty-icon">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M30 46.6667L36.6667 40L30 33.3333" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M50 33.3333L43.3333 40L50 46.6667" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                <rect x="13.3333" y="13.3333" width="53.3333" height="53.3333" rx="8" stroke="#9CA3AF" stroke-width="3"/>
+                <path d="M13.3333 26.6667H66.6667" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <h2>No expenses yet</h2>
+        <p>Start tracking your shared expenses by adding your first expense</p>
+        <a href="{% url 'expenses:add_expense' %}" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Add Your First Expense
+        </a>
+    </section>
+    {% endif %}
+
+</div>
+
+<style>
+.expenses-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.header-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+/* Filters Section */
+.filters-section {
+    margin-bottom: 2rem;
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+}
+
+.filters-container {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.filter-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #111827;
+    background-color: #f9fafb;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.filter-select:hover {
+    border-color: #d1d5db;
+    background-color: #fff;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #1abc9c;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.1);
+}
+
+/* Expenses List */
+.expenses-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.expense-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+    transition: all 0.3s ease;
+}
+
+.expense-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    border-color: #e5e7eb;
+}
+
+.expense-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.expense-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.category-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid;
+    width: fit-content;
+}
+
+.category-icon {
+    font-size: 1.1rem;
+}
+
+.category-name {
+    color: #374151;
+}
+
+.expense-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.expense-amount {
+    text-align: right;
+}
+
+.amount-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #16a085;
+}
+
+.expense-card-body {
+    padding: 1rem 0;
+    border-top: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.expense-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.meta-item svg {
+    flex-shrink: 0;
+}
+
+.meta-item strong {
+    color: #111827;
+    font-weight: 600;
+}
+
+.split-badge {
+    margin-left: auto;
+}
+
+.badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-blue {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-orange {
+    background-color: #fed7aa;
+    color: #c2410c;
+}
+
+.badge-purple {
+    background-color: #e9d5ff;
+    color: #7c3aed;
+}
+
+.expense-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    gap: 1rem;
+}
+
+.btn-view-details {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: white;
+    padding: 0.7rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(26, 188, 156, 0.3);
+}
+
+.btn-view-details:hover {
+    background: linear-gradient(135deg, #16a085, #138d75);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 188, 156, 0.4);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-edit {
+    background-color: #f3f4f6;
+    color: #3b82f6;
+}
+
+.btn-edit:hover {
+    background-color: #dbeafe;
+    transform: translateY(-1px);
+}
+
+.btn-delete {
+    background-color: #f3f4f6;
+    color: #ef4444;
+}
+
+.btn-delete:hover {
+    background-color: #fee2e2;
+    transform: translateY(-1px);
+}
+
+/* Buttons */
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(26, 188, 156, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #16a085, #138d75);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(26, 188, 156, 0.4);
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+}
+
+.empty-icon {
+    margin-bottom: 2rem;
+}
+
+.empty-state h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.75rem;
+}
+
+.empty-state p {
+    color: #6b7280;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    max-width: 400px;
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .expenses-container {
+        padding: 20px 15px 60px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+    }
+
+    .expense-card-header {
+        flex-direction: column;
+    }
+
+    .expense-amount {
+        text-align: left;
+    }
+
+    .expense-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .split-badge {
+        margin-left: 0;
+    }
+
+    .expense-card-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .action-buttons {
+        justify-content: flex-end;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const groupFilter = document.getElementById('groupFilter');
+    const categoryFilter = document.getElementById('categoryFilter');
+    
+    if (groupFilter) {
+        groupFilter.addEventListener('change', function() {
+            const url = new URL(window.location);
+            if (this.value) {
+                url.searchParams.set('group', this.value);
+            } else {
+                url.searchParams.delete('group');
+            }
+            window.location.href = url.toString();
+        });
+    }
+    
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', function() {
+            const url = new URL(window.location);
+            if (this.value) {
+                url.searchParams.set('category', this.value);
+            } else {
+                url.searchParams.delete('category');
+            }
+            window.location.href = url.toString();
+        });
+    }
+});
+</script>
+{% endblock %}

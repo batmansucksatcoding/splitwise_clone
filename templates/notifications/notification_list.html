@@ -1,0 +1,473 @@
+<!-- ============================================ -->
+<!-- templates/notifications/notification_list.html -->
+<!-- ============================================ -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Notifications | Splitwise {% endblock %}
+
+{% block content %}
+<div class="notifications-container fade-in">
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="header-content">
+            <h1>Notifications</h1>
+            <p class="subtitle">Stay updated with your expenses and groups</p>
+        </div>
+        <div class="header-actions">
+            {% if unread_count > 0 %}
+            <form method="post" action="{% url 'notifications:mark_all_as_read' %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-secondary mark-all-btn">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13.3333 4L6 11.3333L2.66667 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Mark All as Read
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'notifications:notification_preferences' %}" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M8 1V2M8 14V15M15 8H14M2 8H1M12.95 12.95L12.243 12.243M3.757 3.757L3.05 3.05M12.95 3.05L12.243 3.757M3.757 12.243L3.05 12.95" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                Preferences
+            </a>
+        </div>
+    </section>
+
+    <!-- Filter Tabs -->
+    <section class="filter-tabs">
+        <a href="?filter=all" class="filter-tab {% if filter_type == 'all' %}active{% endif %}">
+            All
+            <span class="tab-count">{{ notifications|length }}</span>
+        </a>
+        <a href="?filter=unread" class="filter-tab {% if filter_type == 'unread' %}active{% endif %}">
+            Unread
+            <span class="tab-count">{{ unread_count }}</span>
+        </a>
+        <a href="?filter=read" class="filter-tab {% if filter_type == 'read' %}active{% endif %}">
+            Read
+        </a>
+    </section>
+
+    {% if notifications %}
+    <!-- Notifications List -->
+    <section class="notifications-list">
+        {% for notification in notifications %}
+        <div class="notification-card {% if not notification.is_read %}unread{% endif %}">
+            <div class="notification-icon">
+                <span class="icon-emoji">{{ notification.get_icon }}</span>
+            </div>
+            
+            <div class="notification-content">
+                <div class="notification-header">
+                    <h3 class="notification-title">{{ notification.title }}</h3>
+                    <span class="notification-time">{{ notification.created_at|timesince }} ago</span>
+                </div>
+                
+                <p class="notification-message">{{ notification.message }}</p>
+                
+                <div class="notification-meta">
+                    {% if notification.sender %}
+                    <span class="meta-sender">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 7C8.65685 7 10 5.65685 10 4C10 2.34315 8.65685 1 7 1C5.34315 1 4 2.34315 4 4C4 5.65685 5.34315 7 7 7Z" stroke="currentColor" stroke-width="1.3"/>
+                            <path d="M1 12C1 9.79086 2.79086 8 5 8H9C11.2091 8 13 9.79086 13 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                        </svg>
+                        {{ notification.sender.username }}
+                    </span>
+                    {% endif %}
+                    
+                    {% if notification.group %}
+                    <span class="meta-group">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.33333 12.3333V11.1667C9.33333 10.5594 9.09226 9.97717 8.66718 9.5521C8.24211 9.12702 7.65989 8.88595 7.05263 8.88595H3.05263C2.44538 8.88595 1.86315 9.12702 1.43808 9.5521C1.01301 9.97717 0.771936 10.5594 0.771936 11.1667V12.3333" stroke="currentColor" stroke-width="1.3"/>
+                            <path d="M5.05263 6.55263C6.35209 6.55263 7.40526 5.49946 7.40526 4.2C7.40526 2.90054 6.35209 1.84737 5.05263 1.84737C3.75317 1.84737 2.7 2.90054 2.7 4.2C2.7 5.49946 3.75317 6.55263 5.05263 6.55263Z" stroke="currentColor" stroke-width="1.3"/>
+                            <path d="M12.3333 12.3333V11.1667C12.3328 10.6569 12.1773 10.1593 11.8876 9.74299C11.5979 9.32667 11.1877 9.01042 10.7141 8.83684" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                            <path d="M9.04737 1.83684C9.52238 2.00979 9.93386 2.32598 10.2247 2.74274C10.5155 3.15949 10.6716 3.65803 10.6716 4.16895C10.6716 4.67987 10.5155 5.1784 10.2247 5.59516C9.93386 6.01191 9.52238 6.3281 9.04737 6.50105" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                        </svg>
+                        {{ notification.group.name }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="notification-actions">
+                {% if not notification.is_read %}
+                <form method="post" action="{% url 'notifications:mark_as_read' notification.id %}" class="mark-read-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-mark-read" title="Mark as read">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 4.5L6.75 12.75L3 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </form>
+                {% else %}
+                <span class="read-indicator" title="Read">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 4.5L6.75 12.75L3 9" stroke="#16a085" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                {% endif %}
+                
+                {% if notification.action_url %}
+                <a href="{{ notification.action_url }}" class="btn-view-action">
+                    View
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5.25 10.5L8.75 7L5.25 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+
+    {% else %}
+    <!-- Empty State -->
+    <section class="empty-state">
+        <div class="empty-icon">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40 73.3333C58.4095 73.3333 73.3333 58.4095 73.3333 40C73.3333 21.5905 58.4095 6.66666 40 6.66666C21.5905 6.66666 6.66666 21.5905 6.66666 40C6.66666 58.4095 21.5905 73.3333 40 73.3333Z" stroke="#9CA3AF" stroke-width="3"/>
+                <path d="M40 26.6667V40L50 46.6667" stroke="#9CA3AF" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <h2>No notifications</h2>
+        <p>You're all caught up! We'll notify you when something happens.</p>
+    </section>
+    {% endif %}
+
+</div>
+
+<style>
+.notifications-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+}
+
+/* Page Header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.header-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #f9fafb;
+    color: #374151;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 1px solid #e5e7eb;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background-color: #f3f4f6;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+}
+
+.mark-all-btn {
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: white;
+    border: none;
+}
+
+.mark-all-btn:hover {
+    background: linear-gradient(135deg, #16a085, #138d75);
+}
+
+/* Filter Tabs */
+.filter-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+.filter-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    color: #6b7280;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+}
+
+.filter-tab:hover {
+    color: #111827;
+    border-bottom-color: #d1d5db;
+}
+
+.filter-tab.active {
+    color: #1abc9c;
+    border-bottom-color: #1abc9c;
+}
+
+.tab-count {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    padding: 0.15rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.filter-tab.active .tab-count {
+    background-color: #d1fae5;
+    color: #047857;
+}
+
+/* Notifications List */
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.notification-card {
+    display: flex;
+    gap: 1rem;
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #f3f4f6;
+    transition: all 0.3s ease;
+}
+
+.notification-card.unread {
+    background: linear-gradient(to right, #f0fdfa 0%, white 10%);
+    border-left: 4px solid #1abc9c;
+}
+
+.notification-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+.notification-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-card.unread .notification-icon {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+}
+
+.icon-emoji {
+    font-size: 1.5rem;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+    gap: 1rem;
+}
+
+.notification-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.notification-time {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    white-space: nowrap;
+}
+
+.notification-message {
+    color: #4b5563;
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.notification-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-sender,
+.meta-group {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.notification-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.btn-mark-read {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #6b7280;
+}
+
+.btn-mark-read:hover {
+    background: #16a085;
+    color: white;
+    border-color: #16a085;
+}
+
+.read-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.btn-view-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: linear-gradient(135deg, #1abc9c, #16a085);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-view-action:hover {
+    background: linear-gradient(135deg, #16a085, #138d75);
+    transform: translateY(-1px);
+}
+
+/* Empty State */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.empty-icon {
+    margin-bottom: 2rem;
+}
+
+.empty-state h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.75rem;
+}
+
+.empty-state p {
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .notifications-container {
+        padding: 20px 15px 60px;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-content h1 {
+        font-size: 2rem;
+    }
+
+    .notification-card {
+        flex-direction: column;
+    }
+
+    .notification-actions {
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .notification-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+

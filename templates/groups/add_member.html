@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Add Members to {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="form-container fade-in">
+  <h1>Add Members to "{{ group.name }}"</h1>
+
+  {% if users %}
+    <form method="POST">
+      {% csrf_token %}
+      <label>Select Users:</label>
+      <div class="member-list">
+        {% for user in users %}
+          <div class="member-item">
+            <input type="checkbox" name="members" value="{{ user.id }}">
+            <span>{{ user.username }}</span>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn-primary">Add Selected</button>
+      <a href="{% url 'group_detail' group.id %}" class="btn-secondary">Cancel</a>
+    </form>
+  {% else %}
+    <p>No available users to add.</p>
+  {% endif %}
+</div>
+
+<style>
+.form-container {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+  color: #222;
+}
+
+.member-list {
+  margin: 20px 0;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.member-item:last-child { border-bottom: none; }
+
+.member-item span {
+  margin-left: 10px;
+  color: #333;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-primary { background: #1abc9c; color: white; border: none; }
+.btn-secondary { background: #f1f3f5; color: #333; border: 1px solid #ccc; }
+
+.btn-primary:hover { background: #16a085; }
+.btn-secondary:hover { background: #e9ecef; }
+
+.fade-in { animation: fadeIn .5s ease forwards; opacity: 0; transform: translateY(10px); }
+@keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+</style>
+{% endblock %}

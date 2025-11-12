@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Edit Expense | Splitwise{% endblock %}
+
+{% block content %}
+<div class="add-expense-page">
+  <div class="add-expense-card">
+    <div class="card-header">
+      <h1 class="page-title">Edit Expense</h1>
+    </div>
+
+    <form method="POST" class="space-y-4">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <div class="form-buttons">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'group_detail' expense.group.id %}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+/* === PAGE BACKGROUND === */
+.add-expense-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+  color: #fff;
+}
+
+/* === CARD === */
+.add-expense-card {
+  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 550px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #f9fafb;
+}
+
+/* === FORM ELEMENTS === */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+form p {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: #e5e7eb;
+}
+
+form label {
+  font-weight: 500;
+  color: #f3f4f6;
+}
+
+/* Input Fields */
+form input,
+form select,
+form textarea {
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  outline: none;
+  transition: border 0.3s, background 0.3s;
+  font-size: 1rem;
+}
+
+/* Fix dropdown visibility */
+form select option {
+  background: #1e293b;
+  color: #f9fafb;
+}
+
+/* Focus state */
+form input:focus,
+form select:focus,
+form textarea:focus {
+  border-color: #facc15;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* === BUTTONS === */
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.7rem 1.5rem;
+  border-radius: 0.6rem;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+/* Primary Button */
+.btn-primary {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  transform: translateY(-1px);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+</style>
+{% endblock %}

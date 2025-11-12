@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}My Balances | Splitwise{% endblock %}
+
+{% block content %}
+<div class="balances-page" data-csrf="{{ csrf_token }}">
+  <div class="balances-header">
+    <h1>Your Balances</h1>
+    <div class="balance-summary">
+      <div class="summary-card owes">
+        <h3>You Owe</h3>
+        <p class="amount negative">₹{{ total_owes|floatformat:2 }}</p>
+      </div>
+      <div class="summary-card owed">
+        <h3>You Are Owed</h3>
+        <p class="amount positive">₹{{ total_owed|floatformat:2 }}</p>
+      </div>
+      <div class="summary-card net">
+        <h3>Net Balance</h3>
+        <p class="amount {% if net_balance >= 0 %}positive{% else %}negative{% endif %}">
+          ₹{{ net_balance|floatformat:2 }}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="balances-content">
+    <div class="balance-section">
+      <h2>You Owe</h2>
+      {% if owes %}
+        <div class="balance-list">
+          {% for item in owes %}
+            <div class="balance-item owes-item">
+              <div class="balance-info">
+                <div class="user-name">{{ item.user.username }}</div>
+                <div class="group-name">in {{ item.group.name }}</div>
+              </div>
+              <div class="balance-amount negative">₹{{ item.amount|floatformat:2 }}</div>
+              <div class="balance-actions">
+                <button 
+                  class="btn btn-sm btn-settle" 
+                  data-group-id="{{ item.group.id }}"
+                  data-payer-id="{{ request.user.id }}"
+                  data-receiver-id="{{ item.user.id }}"
+                  data-amount="{{ item.amount }}"
+                  onclick="openSettleModal(this)"
+                >
+                  Settle Up
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">You don't owe anyone! 🎉</p>
+      {% endif %}
+    </div>
+
+    <div class="balance-section">
+      <h2>You Are Owed</h2>
+      {% if owed %}
+        <div class="balance-list">
+          {% for item in owed %}
+            <div class="balance-item owed-item">
+              <div class="balance-info">
+                <div class="user-name">{{ item.user.username }}</div>
+                <div class="group-name">in {{ item.group.name }}</div>
+              </div>
+              <div class="balance-amount positive">₹{{ item.amount|floatformat:2 }}</div>
+              <div class="balance-actions">
+                <a href="{% url 'balances:group_balances' item.group.id %}" class="btn btn-sm btn-secondary">
+                  View Group
+                </a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="empty-state">No one owes you money</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div id="settle-modal" class="modal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>Record Payment</h2>
+      <button class="modal-close" onclick="closeSettleModal()">&times;</button>
+    </div>
+    <form id="settle-form">
+      {% csrf_token %}
+      <input type="hidden" id="settle-group-id">
+      <input type="hidden" id="settle-payer-id">
+      <input type="hidden" id="settle-receiver-id">
+      
+      <div class="form-group">
+        <label for="settle-amount">Amount (₹)</label>
+        <input type="number" id="settle-amount" step="0.01" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="settle-note">Note (optional)</label>
+        <textarea id="settle-note" rows="3"></textarea>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Record Payment</button>
+        <button type="button" class="btn btn-secondary" onclick="closeSettleModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.balances-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.balances-header {
+  margin-bottom: 3rem;
+}
+
+.balance-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.summary-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.summary-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-card .amount {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.amount.positive {
+  color: #27ae60;
+}
+
+.amount.negative {
+  color: #e74c3c;
+}
+
+.balance-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.balance-section h2 {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+}
+
+.balance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.balance-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.balance-item:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.balance-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.group-name {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.balance-amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 2rem;
+}
+
+.balance-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #999;
+  font-size: 1.1rem;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #999;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+</style>
+
+<script>
+function openSettleModal(button) {
+  var groupId = button.getAttribute('data-group-id');
+  var payerId = button.getAttribute('data-payer-id');
+  var receiverId = button.getAttribute('data-receiver-id');
+  var amount = button.getAttribute('data-amount');
+  
+  document.getElementById('settle-group-id').value = groupId;
+  document.getElementById('settle-payer-id').value = payerId;
+  document.getElementById('settle-receiver-id').value = receiverId;
+  document.getElementById('settle-amount').value = amount;
+  document.getElementById('settle-modal').style.display = 'flex';
+}
+
+function closeSettleModal() {
+  document.getElementById('settle-modal').style.display = 'none';
+  document.getElementById('settle-form').reset();
+}
+
+document.getElementById('settle-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  var groupId = document.getElementById('settle-group-id').value;
+  var payerId = document.getElementById('settle-payer-id').value;
+  var receiverId = document.getElementById('settle-receiver-id').value;
+  var amount = document.getElementById('settle-amount').value;
+  var note = document.getElementById('settle-note').value;
+  var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  
+  try {
+    var response = await fetch('/api/balances/group/' + groupId + '/settle/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({
+        payer_id: payerId,
+        receiver_id: receiverId,
+        amount: amount,
+        note: note
+      })
+    });
+    
+    var data = await response.json();
+    
+    if (data.success) {
+      alert('Payment recorded successfully!');
+      window.location.reload();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Failed to record payment');
+  }
+});
+</script>
+{% endblock %}
