@@ -85,5 +85,9 @@ A full-stack Splitwise Clone built for managing and tracking shared expenses amo
 
 Inspired by Splitwise, this clone replicates its expense-sharing logic while integrating advanced analytics and a refined futuristic UI.
 
+👨‍💻 Author
+
+Krish Jha (aka batmansucksatcoding)
+Built with ❤️ using Django.
 
 
