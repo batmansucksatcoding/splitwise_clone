@@ -6,7 +6,6 @@
 {% block content %}
 <div class="dashboard-container fade-in">
 
-    <!-- Header -->
     <section class="dashboard-header">
         <div class="header-text">
             <h1>👥 My Friends</h1>
@@ -19,7 +18,6 @@
         </div>
     </section>
 
-    <!-- Friends List -->
     <section class="friends-section">
         {% if friends %}
             <div class="friends-list">
@@ -55,7 +53,7 @@
 </div>
 
 <style>
-/* Friends Section */
+
 .friends-section {
     margin-bottom: 2.5rem;
 }
@@ -88,7 +86,6 @@
     font-weight: 600;
 }
 
-/* Friends List */
 .friends-list {
     display: flex;
     flex-direction: column;
@@ -150,7 +147,6 @@
     white-space: nowrap;
 }
 
-/* Empty State */
 .empty-state {
     text-align: center;
     padding: 3rem 1.5rem;

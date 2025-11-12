@@ -856,7 +856,6 @@
   }
 }
 
-/* Mobile devices */
 @media (max-width: 480px) {
   .auth-card {
     padding: 2rem 1.5rem;
@@ -899,8 +898,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const registerBtn = document.getElementById('registerBtn');
   const btnText = registerBtn.querySelector('.btn-text');
   const btnLoader = registerBtn.querySelector('.btn-loader');
-  
-  // Password toggle functionality
+
   const toggleButtons = document.querySelectorAll('.toggle-password');
   toggleButtons.forEach(btn => {
     btn.addEventListener('click', function() {
@@ -918,7 +916,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   
-  // Progress bar update
   function updateProgress() {
     let filledFields = 0;
     inputs.forEach(input => {
@@ -930,8 +927,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   inputs.forEach(input => {
     input.addEventListener('input', updateProgress);
-    
-    // Real-time validation feedback
+
     input.addEventListener('blur', function() {
       if (this.value.trim() !== '') {
         const isValid = this.checkValidity();
@@ -948,16 +944,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
     });
-    
-    // Remove validation classes on focus
+
     input.addEventListener('focus', function() {
       this.classList.remove('is-valid', 'is-invalid');
       const successIcon = this.parentElement.querySelector('.input-success');
       if (successIcon) successIcon.style.display = 'none';
     });
   });
-  
-  // Password strength checker
+
   const passwordInput = document.querySelector('input[name="password1"], input[name="password"]');
   const strengthIndicator = document.getElementById('passwordStrength');
   
@@ -977,11 +971,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function calculatePasswordStrength(password) {
     let strength = 0;
     
-    // Length check
     if (password.length >= 8) strength++;
     if (password.length >= 12) strength++;
     
-    // Character variety
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
     if (/\d/.test(password)) strength++;
     if (/[^a-zA-Z0-9]/.test(password)) strength++;
@@ -1012,8 +1004,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     text.textContent = strengthLabels[strength];
     text.style.color = strengthColors[strength];
-    
-    // Show tips for weak passwords
+
     if (strength === 'weak' && tips) {
       tips.style.display = 'block';
     } else if (tips) {
@@ -1021,13 +1012,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Form submission
   form.addEventListener('submit', function(e) {
     const termsCheckbox = document.getElementById('terms');
     if (termsCheckbox && !termsCheckbox.checked) {
       e.preventDefault();
       
-      // Scroll to terms section and highlight it
       termsCheckbox.parentElement.parentElement.style.animation = 'shake 0.4s ease-in-out';
       termsCheckbox.parentElement.parentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       
@@ -1043,10 +1032,8 @@ document.addEventListener('DOMContentLoaded', function() {
     btnLoader.style.display = 'inline-block';
   });
   
-  // Initialize progress
   updateProgress();
   
-  // Add smooth scroll behavior for the card if it overflows
   const authCard = document.querySelector('.auth-card');
   if (authCard.scrollHeight > authCard.clientHeight) {
     authCard.style.overflowY = 'auto';

@@ -57,7 +57,6 @@ footer {
 }
 
 
-/* AUTH */
 .auth-container {
   display: flex;
   justify-content: center;
@@ -113,7 +112,6 @@ footer {
   font-size: 0.95rem;
 }
 
-/* DASHBOARD */
 .dashboard {
   text-align: center;
   padding: 4rem 2rem;
@@ -124,8 +122,6 @@ footer {
   margin-bottom: 1rem;
 }
 
-
-/* ======== Global Styles ======== */
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
@@ -145,7 +141,7 @@ a:hover {
     color: #1e8449;
 }
 
-/* ======== Navbar ======== */
+
 .navbar {
     background: #ffffffc9;
     backdrop-filter: blur(12px);
@@ -177,7 +173,6 @@ a:hover {
     color: #2ecc71;
 }
 
-/* ======== Auth Pages ======== */
 .auth-container {
     flex: 1;
     display: flex;
@@ -248,7 +243,6 @@ input[type="text"], input[type="password"], input[type="email"] {
     font-size: 0.9rem;
 }
 
-/* ======== Footer ======== */
 .footer {
     background: #ffffffcc;
     text-align: center;
@@ -260,7 +254,6 @@ input[type="text"], input[type="password"], input[type="email"] {
 }
 
 
-/* ===== General Reset ===== */
 * {
     margin: 0;
     padding: 0;
@@ -276,7 +269,6 @@ body {
     min-height: 100vh;
 }
 
-/* ===== Navbar ===== */
 .navbar {
     position: sticky;
     top: 0;
@@ -312,7 +304,6 @@ body {
     color: #16a34a;
 }
 
-/* ===== Auth Centered Wrapper ===== */
 .auth-wrapper {
     flex: 1;
     display: flex;
@@ -351,7 +342,6 @@ h2 {
     font-size: 0.95rem;
 }
 
-/* ===== Form Elements ===== */
 .auth-form {
     text-align: left;
 }
@@ -385,7 +375,6 @@ input:focus {
     box-shadow: 0 0 0 2px #16a34a33;
 }
 
-/* ===== Buttons ===== */
 .btn-primary {
     width: 100%;
     padding: 0.8rem;
@@ -404,7 +393,6 @@ input:focus {
     transform: translateY(-2px);
 }
 
-/* ===== Redirect Links ===== */
 .redirect {
     margin-top: 1.5rem;
     font-size: 0.9rem;
@@ -420,7 +408,6 @@ input:focus {
     text-decoration: underline;
 }
 
-/* ===== Footer ===== */
 .footer {
     text-align: center;
     padding: 1rem;
@@ -430,7 +417,6 @@ input:focus {
     color: #333;
 }
 
-/* ===== Animation ===== */
 .fade-in {
     opacity: 0;
     animation: fadeInUp 0.8s ease forwards;
@@ -447,10 +433,6 @@ input:focus {
     }
 }
 
-
-/* ===========================
-   DASHBOARD STYLING
-=========================== */
 
 .dashboard-container {
   max-width: 1200px;
@@ -484,7 +466,6 @@ input:focus {
   text-decoration: none;
 }
 
-/* Summary Cards */
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -525,7 +506,6 @@ input:focus {
   color: #16a34a;
 }
 
-/* Group Cards */
 .group-section {
   margin-top: 3rem;
 }
@@ -627,7 +607,6 @@ input:focus {
   margin-top: 2rem;
 }
 
-/* Animation */
 .fade-in {
   opacity: 0;
   animation: fadeInUp 0.8s ease forwards;
